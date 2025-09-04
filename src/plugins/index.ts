@@ -11,5 +11,6 @@ export * from './javascript';
 export * from './mqtt';
 export * from './oauth2';
 export * from './amqp';
+export * from './sql';
 export * from './websocket';
 export * from './xml';
