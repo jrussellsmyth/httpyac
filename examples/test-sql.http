@@ -1,0 +1,23 @@
+### Test SQL Request with PostgreSQL syntax
+SQL postgresql://test:password@localhost:5432/testdb
+
+SELECT 1 as test_value, 'Hello SQL' as message;
+
+### Test protocol syntax  
+postgresql://test:password@localhost:5432/testdb
+
+SELECT 
+  id, 
+  name, 
+  email 
+FROM users 
+WHERE active = true
+ORDER BY created_at DESC 
+LIMIT 5;
+
+### Test with headers
+SQL postgresql://test:password@localhost:5432/testdb
+timeout: 30000
+
+INSERT INTO logs (message, created_at) 
+VALUES ('Test message from httpyac', NOW());
