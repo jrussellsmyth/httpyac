@@ -21,7 +21,7 @@ export interface GrpcClient extends grpc.Client {
 }
 
 export const GrpcUrlRegex =
-  /^\s*((?<protocol>grpc|https?):\/\/)?(?<server>[^/]+?)(\/(?<path>.+))?\/(?<service>[^/]+?)\/(?<method>[^/]+?)$/iu;
+  /^\s*((?<protocol>grpc|grpc-web|https?):\/\/)?(?<server>[^/]+?)(\/(?<path>.+))?\/(?<service>[^/]+?)\/(?<method>[^/]+?)$/iu;
 
 export function getSerivceData(url: string, protoDefinitions: Record<string, ProtoDefinition>): ServiceData {
   const urlMatch = GrpcUrlRegex.exec(url);
