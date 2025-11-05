@@ -150,9 +150,16 @@ export class GrpcWebRequestClient extends models.AbstractRequestClient<typeof go
     // 4 bytes: message length (big-endian)
     // N bytes: message data (protobuf encoded)
 
-    // For now, we'll encode the data as JSON (which works for simple messages)
-    // In a production implementation, this should use the actual protobuf serializer
-    const messageData = Buffer.from(JSON.stringify(data), 'utf-8');
+    let messageData: Buffer;
+
+    // Use protobuf serialization if available
+    if (this._serviceData?.methodDefinition?.requestSerialize) {
+      messageData = this._serviceData.methodDefinition.requestSerialize(data);
+    } else {
+      // Fallback to JSON encoding
+      messageData = Buffer.from(JSON.stringify(data), 'utf-8');
+    }
+
     const messageLength = messageData.length;
 
     const buffer = Buffer.alloc(5 + messageLength);
@@ -216,11 +223,15 @@ export class GrpcWebRequestClient extends models.AbstractRequestClient<typeof go
       } else {
         // Data frame - contains message
         try {
-          // For now, parse as JSON
-          // In production, this should use the protobuf deserializer
-          messageBody = JSON.parse(frameData.toString('utf-8'));
+          // Use protobuf deserialization if available
+          if (this._serviceData?.methodDefinition?.responseDeserialize) {
+            messageBody = this._serviceData.methodDefinition.responseDeserialize(frameData);
+          } else {
+            // Fallback to JSON parsing
+            messageBody = JSON.parse(frameData.toString('utf-8'));
+          }
         } catch {
-          // If JSON parsing fails, return raw data
+          // If parsing fails, return raw data
           messageBody = frameData;
         }
       }
