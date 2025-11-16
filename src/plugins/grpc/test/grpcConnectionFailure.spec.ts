@@ -112,4 +112,76 @@ describe('GrpcRequestClient - connection failure handling', () => {
     expect(result).toBe(mockPrevClient);
     expect(mockServiceClass).not.toHaveBeenCalled();
   });
+
+  it('should clear response template headers when creating new client after connection failure', async () => {
+    // This test verifies that headers from a previous successful call
+    // are not retained when the connection fails and a new client is created.
+    
+    const mockRequest: models.Request = {
+      url: 'grpc://localhost:50051/TestService/TestMethod',
+      protocol: 'GRPC',
+      method: 'GRPC',
+    };
+
+    const mockMethodDefinition = {
+      path: '/TestService/TestMethod',
+      requestStream: false,
+      responseStream: false,
+      requestSerialize: jest.fn(),
+      requestDeserialize: jest.fn(),
+      responseSerialize: jest.fn(),
+      responseDeserialize: jest.fn(),
+    };
+
+    // Create a client with TRANSIENT_FAILURE state
+    const mockPrevClient = {
+      close: jest.fn(),
+      getChannel: jest.fn(() => ({
+        getConnectivityState: jest.fn(() => ConnectivityState.TRANSIENT_FAILURE),
+      })),
+    } as unknown as GrpcClient;
+
+    const mockServiceClass = jest.fn().mockImplementation(() => ({
+      getChannel: jest.fn(() => ({
+        getConnectivityState: jest.fn(() => ConnectivityState.READY),
+      })),
+      close: jest.fn(),
+    }));
+    mockServiceClass.service = {
+      TestMethod: mockMethodDefinition,
+    };
+
+    const mockContext: models.ProtoProcessorContext = {
+      options: {
+        protoDefinitions: {
+          test: {
+            grpcObject: {
+              TestService: mockServiceClass,
+            },
+          },
+        },
+      },
+    } as models.ProtoProcessorContext;
+
+    // Create the GrpcRequestClient
+    const client = new GrpcRequestClient(mockRequest, mockContext);
+
+    // Simulate a previous successful call by setting headers in responseTemplate
+    // This is a bit of a hack to access the private field, but it's for testing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (client as any).responseTemplate.headers = { 'x-previous-call': 'should-be-cleared' };
+
+    // Call connect with the previous client in TRANSIENT_FAILURE state
+    const result = await client.connect(mockPrevClient);
+
+    // Assert that a new client was created
+    expect(result).toBeDefined();
+    expect(result).not.toBe(mockPrevClient);
+    
+    // Verify that responseTemplate headers were cleared when a new client was created
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((client as any).responseTemplate.headers).toBeUndefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((client as any).responseTemplate.protocol).toBe('GRPC');
+  });
 });

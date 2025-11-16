@@ -99,6 +99,10 @@ export class GrpcRequestClient extends models.AbstractRequestClient<GrpcClient |
           this.request.channelCredentials || grpc.credentials.createInsecure(),
           this.getChannelOptions(this.request, this._clientDefinition)
         );
+        // Clear response template to avoid returning stale data from previous calls
+        this.responseTemplate = {
+          protocol: 'GRPC',
+        };
       } else {
         log.error('no protodefinitions found in context');
         throw new Error('Missing Protodefinitions');
