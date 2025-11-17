@@ -1,0 +1,57 @@
+#proto < ./hello.proto
+
+###
+# @name echo
+GET https://postman-echo.com/get?foo1=bar1&foo2=bar2
+
+###
+# @name Coffee
+GET https://coffee.alexflipnote.dev/random.json
+
+###
+# @name get
+GET https://ubiquitous-doodle-j4wvr5gp9gfjqrg-8080.app.github.dev/hello.HelloService/SayHello
+
+###
+# @name plainGRPC
+proto < ./hello.proto
+GRPC ubiquitous-doodle-j4wvr5gp9gfjqrg-9090.app.github.dev:443/hello.HelloService/SayHello
+
+{
+    "name":"steve martin"
+}
+
+###
+# @name web-grpc
+proto < ./hello.proto
+GRPC-WEB https://ubiquitous-doodle-j4wvr5gp9gfjqrg-8080.app.github.dev/hello.HelloService/SayHello
+
+{
+    "name":"onigo boingo plays again"
+}
+
+###
+# @name stream
+GRPC-WEB https://ubiquitous-doodle-j4wvr5gp9gfjqrg-8443.app.github.dev/hello.HelloService/StreamRandomWords
+
+{
+    "num_words":10
+}
+
+###
+# @name postman-echo
+proto < ./hello.proto
+GRPC-WEB http://localhost:8080/HelloService/SayHello
+
+{
+    "greeting": "sir steve"
+}
+
+###
+# @name postman-echo-grpc
+# @grpc-reflection
+GRPC http://grpc.postman-echo.com/HelloService/SayHello
+
+{
+    "greeting": "sir steve"
+}
