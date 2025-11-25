@@ -1,0 +1,66 @@
+# gRPC-Web Example
+
+## Overview
+This example demonstrates how to use gRPC-Web with httpyac.
+gRPC-Web allows you to call gRPC services from environments that don't support HTTP/2 or native gRPC.
+
+## Prerequisites
+1. Load proto file definitions first
+2. gRPC-Web service must be running and accessible
+
+## Basic gRPC-Web Request
+
+### Load proto file
+# @proto ./path/to/your/service.proto
+
+### Make a gRPC-Web request using GRPC_WEB keyword
+GRPC_WEB localhost:8080/helloworld.Greeter/SayHello
+Content-Type: application/grpc-web+proto
+
+{
+  "name": "World"
+}
+
+###
+
+### Alternative syntax using grpc-web:// protocol
+grpc-web://localhost:8080/helloworld.Greeter/SayHello
+
+{
+  "name": "HttpYac User"
+}
+
+###
+
+### gRPC-Web with custom headers
+GRPC_WEB example.com/myservice.MyService/MyMethod
+Authorization: Bearer token123
+Custom-Header: value
+
+{
+  "field1": "value1",
+  "field2": 42
+}
+
+###
+
+## Notes
+- gRPC-Web uses HTTP POST with application/grpc-web+proto content-type
+- Messages are encoded using protobuf (same as regular gRPC)
+- Supports both unary and server-streaming calls
+- Works through HTTP proxies and in restricted network environments
+- Use GRPC for native gRPC, GRPC_WEB for gRPC-Web
+
+## Differences from regular GRPC
+- gRPC-Web uses HTTP/1.1 compatible transport
+- Works in browser environments and through HTTP proxies
+- Binary data is base64 encoded in text mode
+- Limited to unary and server-streaming (no client-streaming or bidirectional)
+
+## URL Format
+grpc-web://[protocol://]<server>[/path]/<service>/<method>
+
+Examples:
+- grpc-web://localhost:8080/mypackage.MyService/MyMethod
+- GRPC_WEB https://api.example.com/grpc/mypackage.MyService/MyMethod
+- grpc-web://example.com:443/path/to/service/MyService/MyMethod
